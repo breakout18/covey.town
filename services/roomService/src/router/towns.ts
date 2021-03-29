@@ -114,7 +114,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   app.post('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
       const result = req.params;
-      res.satus(StatusCodes.OK).json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -126,10 +126,10 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /**
    * Get chat history
    */
-  app.get('/towns/:townID/chat', BodyParser.json, async (req, res) => {
+  app.get('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
       const result = req.params;
-      res.satus(StatusCodes.OK).json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

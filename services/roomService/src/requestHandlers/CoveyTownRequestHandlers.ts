@@ -229,7 +229,7 @@ export async function townChatHandler(requestData: TownChatRequest): Promise<Res
  */
 export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.chatHistoryTown(requestData.coveyTownID, requestData.offset, requestData.limit);
+  const success = townsStore.chatHistoryTown(requestData.coveyTownID, requestData.offset);
   const messages = null;
   const offset = '';
   const limit = 0;

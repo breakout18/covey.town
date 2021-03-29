@@ -75,7 +75,7 @@ export default class CoveyTownsStore {
     // Sanitize message
     const sanitize = (msg: string) => { msg.trimStart(); };
     const sanitizedMessage = sanitize(message);
-    if (existingTown) {
+    if (existingTown && sanitizedMessage) {
       return true;
     }
     return false;
@@ -88,9 +88,10 @@ export default class CoveyTownsStore {
    * @param limit 
    * @returns 
    */
-  chatHistoryTown(coveyTownID: string, offset: string, limit: number): boolean {
+  chatHistoryTown(coveyTownID: string, offset: string): boolean {
     const existingTown = this.getControllerForTown(coveyTownID);
-    if (existingTown) {
+    const checkIfMessageExists = (id: string) => id && true;
+    if (existingTown && checkIfMessageExists(offset)) {
       return true;
     }
     return false;
