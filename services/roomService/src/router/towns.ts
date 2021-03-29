@@ -108,6 +108,36 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     }
   });
 
+  /**
+   * Send a chat message
+   */
+  app.post('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
+    try {
+      const result = req.params;
+      res.satus(StatusCodes.OK).json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
+    }
+  });
+
+  /**
+   * Get chat history
+   */
+  app.get('/towns/:townID/chat', BodyParser.json, async (req, res) => {
+    try {
+      const result = req.params;
+      res.satus(StatusCodes.OK).json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
+    }
+  })
+
   const socketServer = new io.Server(http, { cors: { origin: '*' } });
   socketServer.on('connection', townSubscriptionHandler);
   return socketServer;

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
 import Player from '../types/Player';
-import { CoveyTownList, UserLocation } from '../CoveyTypes';
+import { ChatMessage, CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
 
@@ -59,6 +59,21 @@ export interface TownListResponse {
   towns: CoveyTownList;
 }
 
+export interface TownChatHistoryResponse {
+  messages: ChatMessage[] | null;
+  offset: string;
+  limit: number;
+}
+
+/**
+ * Response from the server for a Town chat request. Message is the sanitized message. Warning will notify the client if anything in there message is changed. Offset is the id of the chat message.
+ */
+export interface TownChatResponse {
+  message: string;
+  warning: string;
+  offset: string;
+}
+
 /**
  * Payload sent by the client to delete a Town
  */
@@ -77,6 +92,24 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+}
+
+/**
+ * Payload sent by the client to send a quick chat message.
+ */
+export interface TownChatRequest {
+  coveyTownID: string;
+  message: string;
+}
+
+/**
+ * Payload sent by the client to send a quick chat message.
+ * offset is the id of the chat message that the server will return limit messages prior.
+ */
+ export interface TownChatHistoryRequest {
+  coveyTownID: string;
+  offset: string;
+  limit: number;
 }
 
 /**
@@ -167,6 +200,48 @@ export async function townUpdateHandler(requestData: TownUpdateRequest): Promise
     message: !success ? 'Invalid password or update values specified. Please double check your town update password.' : undefined,
   };
 
+}
+
+/**
+ * Handler to process when a client sends a quickchat message. Message will be sanitized.
+ * @param requestData Raw quickchat payload recieved by client.
+ * @returns 
+ */
+export async function townChatHandler(requestData: TownChatRequest): Promise<ResponseEnvelope<TownChatResponse>> {
+  const townsStore = CoveyTownsStore.getInstance();
+  const success = townsStore.chatTown(requestData.coveyTownID, requestData.message);
+  const message = '';
+  const warning = '';
+  const offset = '';
+  return {
+    isOK: success,
+    response: {
+      message,
+      warning,
+      offset,
+    },
+    message: !success ? 'Message failed to send.' : undefined,
+  };
+}
+
+/**
+ * Handler to process when a client requests the history of messages sent in the town.
+ */
+ export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
+  const townsStore = CoveyTownsStore.getInstance();
+  const success = townsStore.chatHistoryTown(requestData.coveyTownID, requestData.offset, requestData.limit);
+  const messages = null;
+  const offset = '';
+  const limit = 0;
+  return {
+    isOK: success,
+    response: {
+      messages,
+      offset,
+      limit,
+    },
+    message: !success ? 'Message failed to send.' : undefined,
+  };
 }
 
 /**

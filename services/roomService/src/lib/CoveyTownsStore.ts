@@ -70,4 +70,32 @@ export default class CoveyTownsStore {
     return false;
   }
 
+  chatTown(coveyTownID: string, message: string): boolean {
+    const existingTown = this.getControllerForTown(coveyTownID);
+    // Sanitize message
+    const sanitize = (msg: string) => {
+      return msg;
+    }
+    const sanitizedMessage = sanitize(message);
+    if (existingTown) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Fetch the specified number of messsages prior to the message with id offset.
+   * @param coveyTownID 
+   * @param offset 
+   * @param limit 
+   * @returns 
+   */
+  chatHistoryTown(coveyTownID: string, offset: string, limit: number): boolean {
+    const existingTown = this.getControllerForTown(coveyTownID);
+    if (existingTown) {
+      return true;
+    }
+    return false;
+  }
+
 }
