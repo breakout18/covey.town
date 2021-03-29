@@ -106,7 +106,7 @@ export interface TownChatRequest {
  * Payload sent by the client to send a quick chat message.
  * offset is the id of the chat message that the server will return limit messages prior.
  */
- export interface TownChatHistoryRequest {
+export interface TownChatHistoryRequest {
   coveyTownID: string;
   offset: string;
   limit: number;
@@ -227,7 +227,7 @@ export async function townChatHandler(requestData: TownChatRequest): Promise<Res
 /**
  * Handler to process when a client requests the history of messages sent in the town.
  */
- export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
+export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
   const success = townsStore.chatHistoryTown(requestData.coveyTownID, requestData.offset, requestData.limit);
   const messages = null;

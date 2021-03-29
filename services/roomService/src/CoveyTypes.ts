@@ -7,4 +7,4 @@ export type UserLocation = {
 };
 export type CoveyTownList = { friendlyName: string; coveyTownID: string; currentOccupancy: number; maximumOccupancy: number }[];
 
-export type ChatMessage = { id: string; sender: string; message: string; timestamp: number;}
+export type ChatMessage = { id: string; sender: string; message: string; timestamp: number;};

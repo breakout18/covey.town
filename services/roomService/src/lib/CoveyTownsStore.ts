@@ -73,9 +73,7 @@ export default class CoveyTownsStore {
   chatTown(coveyTownID: string, message: string): boolean {
     const existingTown = this.getControllerForTown(coveyTownID);
     // Sanitize message
-    const sanitize = (msg: string) => {
-      return msg;
-    }
+    const sanitize = (msg: string) => { msg.trimStart(); };
     const sanitizedMessage = sanitize(message);
     if (existingTown) {
       return true;
