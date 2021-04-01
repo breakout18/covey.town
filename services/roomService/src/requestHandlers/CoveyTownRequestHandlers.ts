@@ -1,9 +1,12 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
+import { nanoid } from 'nanoid';
 import Player from '../types/Player';
-import { ChatMessage, CoveyTownList, UserLocation } from '../CoveyTypes';
+import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
+import { ChatMessage } from '../types/chatrules';
+
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -68,9 +71,8 @@ export interface TownChatHistoryResponse {
 /**
  * Response from the server for a Town chat request. Message is the sanitized message. Warning will notify the client if anything in there message is changed. Offset is the id of the chat message.
  */
-export interface TownChatResponse {
+export interface TownChatSendResponse {
   message: string;
-  warning: string;
   offset: string;
 }
 
@@ -97,7 +99,7 @@ export interface TownUpdateRequest {
 /**
  * Payload sent by the client to send a quick chat message.
  */
-export interface TownChatRequest {
+export interface TownChatSendRequest {
   coveyTownID: string;
   message: string;
 }
@@ -203,21 +205,27 @@ export async function townUpdateHandler(requestData: TownUpdateRequest): Promise
 }
 
 /**
- * Handler to process when a client sends a quickchat message. Message will be sanitized.
+ * Handler to process when a client sends a quickchat message. Message will be checked against rules.
  * @param requestData Raw quickchat payload recieved by client.
  * @returns 
  */
-export async function townChatHandler(requestData: TownChatRequest): Promise<ResponseEnvelope<TownChatResponse>> {
+export async function townChatSendHandler(requestData: TownChatSendRequest): Promise<ResponseEnvelope<TownChatSendResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.chatTown(requestData.coveyTownID, requestData.message);
-  const message = '';
-  const warning = '';
-  const offset = '';
+  // Clean message
+  const clean = (msg: string) => msg.trimStart().trimEnd();
+  const cleanedMessage = clean(requestData.message);
+  // Send message
+  const town = townsStore.getControllerForTown(requestData.coveyTownID);
+  let success = town != null;
+  const offset = nanoid();
+  if (town) {
+    // Should tell town to send message, need to figure out how to get player
+    success = town.sendChat({ id: offset, sender: new Player('abc'), message: cleanedMessage, timestamp: Date.now()});
+  }
   return {
     isOK: success,
     response: {
-      message,
-      warning,
+      message: cleanedMessage,
       offset,
     },
     message: !success ? 'Message failed to send.' : undefined,
@@ -229,7 +237,8 @@ export async function townChatHandler(requestData: TownChatRequest): Promise<Res
  */
 export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.chatHistoryTown(requestData.coveyTownID, requestData.offset);
+  const town = townsStore.getControllerForTown(requestData.coveyTownID);
+  const success = town != null;
   const messages = null;
   const offset = '';
   const limit = 0;

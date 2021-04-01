@@ -5,6 +5,7 @@ import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
 import TwilioVideo from './TwilioVideo';
 import IVideoClient from './IVideoClient';
+import { ChatMessage, ChatRule, ChatMessageRules } from '../types/chatrules';
 
 const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
 
@@ -72,12 +73,19 @@ export default class CoveyTownController {
 
   private _capacity: number;
 
+  private _chatRules: ChatRule[];
+
+  private _chatHistory: ChatMessage[];
+
   constructor(friendlyName: string, isPubliclyListed: boolean) {
     this._coveyTownID = (process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID());
     this._capacity = 50;
     this._townUpdatePassword = nanoid(24);
     this._isPubliclyListed = isPubliclyListed;
     this._friendlyName = friendlyName;
+    // Default list of of chat rules
+    this._chatRules = ChatMessageRules;
+    this._chatHistory = [];
   }
 
   /**
@@ -121,6 +129,46 @@ export default class CoveyTownController {
     player.updateLocation(location);
     this._listeners.forEach((listener) => listener.onPlayerMoved(player));
   }
+
+  /**
+   * Returns the chat rules for this town.
+   */
+  get chatRules(): ChatRule[] {
+    return this._chatRules;
+  }
+
+  /**
+   * Recieves a chat message, checks it against rules, adds it to the chat history, and notifies all connected players.
+   * @param listener 
+   */
+  
+  sendChat(messageData: ChatMessage): boolean {
+    const legalMessage = this.chatRules.some(rule => rule.check(messageData.message));
+    if (legalMessage) {
+      this._chatHistory.push(messageData);
+      // Notify the other players
+      // this._listeners.forEach((listener) => listener.onMessageSent(player));
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Fetch the specified number of messsages prior to the message with id offset.
+   * @param coveyTownID 
+   * @param offset 
+   * @param limit 
+   * @returns 
+   */
+  /* eslint-disable */
+  chatHistoryTown(offset: string, limit: number): ChatMessage[] {
+    const checkIfMessageExists = (id: string) => id && true;
+    if (checkIfMessageExists(offset)) {
+      return this._chatHistory;
+    }
+    return [];
+  }
+  /* eslint-enable */
 
   /**
    * Subscribe to events from this town. Callers should make sure to
