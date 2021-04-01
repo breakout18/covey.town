@@ -4,6 +4,7 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
+  townChatSendHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
@@ -113,7 +114,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.post('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
-      const result = townChatHandler({
+      const result = townChatSendHandler({
         coveyTownID: req.params.townID,
         message: req.body.message,
       });

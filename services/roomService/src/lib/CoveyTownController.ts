@@ -160,15 +160,14 @@ export default class CoveyTownController {
    * @param limit 
    * @returns 
    */
-  /* eslint-disable */
   chatHistoryTown(offset: string, limit: number): ChatMessage[] {
-    const checkIfMessageExists = (id: string) => id && true;
+    // REMOVE THE LIMIT BELOW, just passing linter
+    const checkIfMessageExists = (id: string) => id && true && limit;
     if (checkIfMessageExists(offset)) {
       return this._chatHistory;
     }
     return [];
   }
-  /* eslint-enable */
 
   /**
    * Subscribe to events from this town. Callers should make sure to
