@@ -132,6 +132,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.get('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
+      // TODO: call handlers.townChatHistoryHandler as result (maris)
       const result = req.params;
       res.status(StatusCodes.OK).json(result);
     } catch (err) {

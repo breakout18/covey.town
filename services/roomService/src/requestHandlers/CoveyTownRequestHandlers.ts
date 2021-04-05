@@ -238,6 +238,7 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
 export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
   const town = townsStore.getControllerForTown(requestData.coveyTownID);
+  // TODO: call controller.chatHistoryTown here (maris)
   const success = town != null;
   const messages = null;
   const offset = '';

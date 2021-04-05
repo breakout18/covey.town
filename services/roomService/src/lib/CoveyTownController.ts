@@ -155,16 +155,19 @@ export default class CoveyTownController {
 
   /**
    * Fetch the specified number of messsages prior to the message with id offset.
-   * @param coveyTownID 
    * @param offset 
    * @param limit 
    * @returns 
    */
   chatHistoryTown(offset: string, limit: number): ChatMessage[] {
-    // REMOVE THE LIMIT BELOW, just passing linter
-    const checkIfMessageExists = (id: string) => id && true && limit;
-    if (checkIfMessageExists(offset)) {
-      return this._chatHistory;
+    const indexOfMessage = (id: string) => this._chatHistory.findIndex(msg => msg.id === id);
+    const index = indexOfMessage(offset);
+    if (index !== -1) {
+      let start = index - limit;
+      if (start < 0) {
+        start = 0;
+      }
+      return this._chatHistory.slice(start, index);
     }
     return [];
   }
