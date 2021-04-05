@@ -159,7 +159,7 @@ export default class CoveyTownController {
    * @param limit 
    * @returns 
    */
-  chatHistoryTown(offset: string, limit: number): ChatMessage[] {
+  chatHistoryTown(offset: string, limit: number): ChatMessage[] | undefined {
     const indexOfMessage = (id: string) => this._chatHistory.findIndex(msg => msg.id === id);
     const index = indexOfMessage(offset);
     if (index !== -1) {
@@ -169,7 +169,7 @@ export default class CoveyTownController {
       }
       return this._chatHistory.slice(start, index);
     }
-    return [];
+    return undefined;
   }
 
   /**

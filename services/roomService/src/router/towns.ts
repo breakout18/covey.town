@@ -4,6 +4,7 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
+  townChatHistoryHandler,
   townChatSendHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
@@ -133,7 +134,11 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   app.get('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
       // TODO: call handlers.townChatHistoryHandler as result (maris)
-      const result = req.params;
+      const result = townChatHistoryHandler({
+        coveyTownID: req.params.coveyTownID,
+        offset: req.body.offset,
+        limit: req.body.limit,
+      });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);

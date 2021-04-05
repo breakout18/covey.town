@@ -171,6 +171,7 @@ export async function townCreateHandler(requestData: TownCreateRequest): Promise
     return {
       isOK: false,
       message: 'FriendlyName must be specified',
+
     };
   }
   const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed);
@@ -238,19 +239,26 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
 export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
   const townsStore = CoveyTownsStore.getInstance();
   const town = townsStore.getControllerForTown(requestData.coveyTownID);
-  // TODO: call controller.chatHistoryTown here (maris)
-  const success = town != null;
-  const messages = null;
-  const offset = '';
-  const limit = 0;
+  if (!town) {
+    return {
+      isOK: false,
+      message: 'Error: No such town',
+    };
+  }
+  const messages = town.chatHistoryTown(requestData.offset, requestData.limit);
+  if (!messages) {
+    return {
+      isOK: false,
+      message: 'Error: No such offset',
+    };
+  }
   return {
-    isOK: success,
+    isOK: true,
     response: {
       messages,
-      offset,
-      limit,
+      offset: requestData.offset,
+      limit: requestData.limit,
     },
-    message: !success ? 'Message failed to send.' : undefined,
   };
 }
 
