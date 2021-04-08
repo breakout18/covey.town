@@ -143,12 +143,16 @@ export default class CoveyTownController {
    */
   
   sendChat(messageData: ChatMessage): boolean {
-    const legalMessage = this.chatRules.some(rule => rule.check(messageData.message));
-    if (legalMessage) {
-      this._chatHistory.push(messageData);
-      // Notify the other players
-      // this._listeners.forEach((listener) => listener.onMessageSent(player));
-      return true;
+    const senderSession = this.getSessionByToken(messageData.sessionToken);
+    if (senderSession) {
+      // const { player } = senderSession;
+      const legalMessage = this.chatRules.some(rule => rule.check(messageData.message));
+      if (legalMessage) {
+        this._chatHistory.push(messageData);
+        // Notify the other players
+        // this._listeners.forEach((listener) => listener.onMessageSent(player));
+        return true;
+      }
     }
     return false;
   }

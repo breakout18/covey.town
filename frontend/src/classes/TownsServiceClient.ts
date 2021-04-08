@@ -77,6 +77,23 @@ export interface TownUpdateRequest {
 }
 
 /**
+ * Payload sent by the client to send a quick chat message.
+ */
+export interface TownChatSendRequest {
+  coveyTownID: string;
+  sessionToken: string;
+  message: string;
+}
+
+/**
+ * Response from the server for a Town chat request. Message is the sanitized message. Warning will notify the client if anything in there message is changed. Offset is the id of the chat message.
+ */
+export interface TownChatSendResponse {
+  message: string;
+  offset: string;
+}
+
+/**
  * Envelope that wraps any response from the server
  */
 export interface ResponseEnvelope<T> {
@@ -139,6 +156,11 @@ export default class TownsServiceClient {
 
   async joinTown(requestData: TownJoinRequest): Promise<TownJoinResponse> {
     const responseWrapper = await this._axios.post('/sessions', requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async sendChat(requestData: TownChatSendRequest): Promise<TownChatSendResponse> {
+    const responseWrapper = await this._axios.post<ResponseEnvelope<TownChatSendResponse>>(`/towns/${requestData.coveyTownID}/chat`, requestData);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 

@@ -101,6 +101,7 @@ export interface TownUpdateRequest {
  */
 export interface TownChatSendRequest {
   coveyTownID: string;
+  sessionToken: string;
   message: string;
 }
 
@@ -219,9 +220,10 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
   const town = townsStore.getControllerForTown(requestData.coveyTownID);
   let success = town != null;
   const offset = nanoid();
+  const curTime = Date.now();
   if (town) {
     // Should tell town to send message, need to figure out how to get player
-    success = town.sendChat({ id: offset, sender: new Player('abc'), message: cleanedMessage, timestamp: Date.now()});
+    success = town.sendChat({ id: offset, sessionToken: requestData.sessionToken, message: cleanedMessage, timestamp: curTime});
   }
   return {
     isOK: success,
