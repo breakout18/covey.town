@@ -27,6 +27,10 @@ export default class Video {
   pauseGame: () => void = ()=>{};
 
   unPauseGame: () => void = ()=>{};
+  
+  pauseListeners: () => void = ()=>{};
+
+  unPauseListeners: () => void = ()=>{};
 
   constructor(userName: string, coveyTownID: string) {
     this._userName = userName;
