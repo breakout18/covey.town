@@ -226,7 +226,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     return (
       <div>
         <WorldMap />
-        <ChatInput />
+        <ChatInput maxLength={140} />
         <VideoOverlay preferredMode="fullwidth" />
       </div>
     );
