@@ -1,4 +1,6 @@
-export type ChatMessage = { id: string; sessionToken: string; message: string; timestamp: number;};
+import Player from './Player';
+
+export type ChatMessage = { id: string; sender: Player; message: string; timestamp: number;};
 export type ChatRule = { name: string, check: (msg: string) => boolean, responseOnFail: string };
 
 const MAX_MSG_LENGTH = 140;

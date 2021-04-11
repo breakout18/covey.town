@@ -223,7 +223,10 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
   const curTime = Date.now();
   if (town) {
     // Should tell town to send message, need to figure out how to get player
-    success = town.sendChat({ id: offset, sessionToken: requestData.sessionToken, message: cleanedMessage, timestamp: curTime});
+    const senderSession = town.getSessionByToken(requestData.sessionToken);
+    if (senderSession) {
+      success = town.sendChat({ id: offset, sender: senderSession.player, message: cleanedMessage, timestamp: curTime});
+    }
   }
   return {
     isOK: success,
@@ -284,6 +287,9 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
     onTownDestroyed() {
       socket.emit('townClosing');
       socket.disconnect(true);
+    },
+    onMessageSent(message: ChatMessage) {
+      socket.emit('messageSent', message);
     },
   };
 }

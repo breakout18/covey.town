@@ -115,7 +115,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.post('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
-      const result = townChatSendHandler({
+      const result = await townChatSendHandler({
         coveyTownID: req.params.townID,
         sessionToken: req.body.sessionToken,
         message: req.body.message,

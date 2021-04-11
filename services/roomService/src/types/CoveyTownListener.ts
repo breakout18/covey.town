@@ -1,3 +1,4 @@
+import { ChatMessage } from './chatrules';
 import Player from './Player';
 
 /**
@@ -26,4 +27,10 @@ export default interface CoveyTownListener {
    * Called when a town is destroyed, causing all players to disconnect
    */
   onTownDestroyed(): void;
+
+  /**
+   * Called when a player sends a quickChat message
+   * @param message the message being sent
+   */
+  onMessageSent(message: ChatMessage): void;
 }
