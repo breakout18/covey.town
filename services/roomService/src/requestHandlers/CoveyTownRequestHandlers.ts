@@ -63,9 +63,8 @@ export interface TownListResponse {
 }
 
 export interface TownChatHistoryResponse {
-  messages: ChatMessage[] | null;
+  messages: ChatMessage[];
   offset: string;
-  limit: number;
 }
 
 /**
@@ -123,6 +122,8 @@ export interface ResponseEnvelope<T> {
   message?: string;
   response?: T;
 }
+
+
 
 /**
  * A handler to process a player's request to join a town. The flow is:
@@ -262,7 +263,6 @@ export async function townChatHistoryHandler(requestData: TownChatHistoryRequest
     response: {
       messages,
       offset: requestData.offset,
-      limit: requestData.limit,
     },
   };
 }

@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
 import { ServerPlayer } from './Player';
+import { ChatMessage } from '../../../services/roomService/src/types/chatrules';
+
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -86,10 +88,24 @@ export interface TownChatSendRequest {
 }
 
 /**
+ * Payload sent by the client to send a quick chat message.
+ * offset is the id of the chat message that the server will return limit messages prior.
+ */
+ export interface TownChatHistoryRequest {
+  coveyTownID: string;
+  offset: string;
+  limit: number;
+}
+
+/**
  * Response from the server for a Town chat request. Message is the sanitized message. Warning will notify the client if anything in there message is changed. Offset is the id of the chat message.
  */
 export interface TownChatSendResponse {
   message: string;
+  offset: string;
+}
+export interface TownChatHistoryResponse {
+  messages: ChatMessage[];
   offset: string;
 }
 
@@ -161,6 +177,11 @@ export default class TownsServiceClient {
 
   async sendChat(requestData: TownChatSendRequest): Promise<TownChatSendResponse> {
     const responseWrapper = await this._axios.post<ResponseEnvelope<TownChatSendResponse>>(`/towns/${requestData.coveyTownID}/chat`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async listHistory(requestData: TownChatHistoryRequest): Promise<TownChatHistoryResponse> {
+    const responseWrapper = await this._axios.get<ResponseEnvelope<TownChatHistoryResponse>>(`/towns/${requestData.coveyTownID}/chat`, {params: requestData});
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
