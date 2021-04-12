@@ -81,11 +81,12 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
   }
 
   function DisplayHistory() {
-    const { isOpen, open, close } = useDisclosure()
+    const { isOpen, open, close } = useDisclosure();
     const onOpen = () => {
       open();
       loadHistory();
     };
+
     return (
       <>
         <Button onClick={onOpen}>Message History</Button>
