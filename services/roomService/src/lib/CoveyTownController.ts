@@ -161,10 +161,14 @@ export default class CoveyTownController {
    * @returns 
    */
   chatHistoryTown(offset: string, limit: number): ChatMessage[] {
-    const orderedHistory = [...this._chatHistory].reverse();
-    const index = offset !== '' ? orderedHistory.findIndex(msg => msg.id === offset) + 1 : 0;
+    const indexOfMessage = (id: string) => this._chatHistory.findIndex(msg => msg.id === id);
+    const index = indexOfMessage(offset);
     if (index !== -1) {
-      return orderedHistory.slice(index, index + limit);
+      let start = index - limit;
+      if (start < 0) {
+        start = 0;
+      }
+      return this._chatHistory.slice(start, index);
     }
     return [];
   }

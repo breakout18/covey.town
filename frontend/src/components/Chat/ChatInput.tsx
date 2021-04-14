@@ -66,6 +66,7 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
     setIsLoading(true);
     try {
       const response = await apiClient.sendChat({coveyTownID: currentTownID, sessionToken, message});
+      setOffsetToLoad(response.offset);
     }
     catch (err) {
       toast({
@@ -105,7 +106,7 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
                     {messageHistory.map((msg) => (
                     <Tr key={msg.id}><Td role='cell'>{msg.timestamp}</Td><Td
                       role='cell'>{msg.message}</Td>
-                      <Td role='cell'>{msg.sender.userName}</Td></Tr>))}
+                      <Td role='cell'>{msg.sender}</Td></Tr>))}
                     <Button 
                     size="sm" 
                     onClick={loadHistory} 
@@ -138,8 +139,8 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
                 value={message}
                 isInvalid={message.length > maxLength}
                 focusBorderColor={message.length > maxLength ? 'red.500' : 'blue.500'}
-                onFocus={videoInstance?.pauseGame}
-                onBlur={videoInstance?.unPauseGame}
+                onFocus={videoInstance?.pauseListeners}
+                onBlur={videoInstance?.unPauseListeners}
                 onChange={event => setMessage(event.target.value)}
         />
         <FormHelperText style={{'color': message.length > maxLength ? 'red' : ''}}>{`${message.length} / ${maxLength}`}</FormHelperText>

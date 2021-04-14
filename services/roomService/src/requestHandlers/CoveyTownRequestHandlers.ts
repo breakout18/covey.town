@@ -252,11 +252,17 @@ export async function townChatHistoryHandler(requestData: TownChatHistoryRequest
     };
   }
   const messages = town.chatHistoryTown(requestData.offset, requestData.limit);
+  if (!messages) {
+    return {
+      isOK: false,
+      message: 'Error: No such offset',
+    };
+  }
   return {
     isOK: true,
     response: {
       messages,
-      offset: messages.length > 0 ? messages[-1].id : requestData.offset,
+      offset: requestData.offset,
     },
   };
 }

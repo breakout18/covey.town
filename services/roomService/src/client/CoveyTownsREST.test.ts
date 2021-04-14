@@ -237,48 +237,4 @@ describe('TownsServiceAPIREST', () => {
 
     });
   });
-
-  describe('CoveyChatSendAPI', () => {
-    it('Throws an error if the town does not exist', async () => {
-      await createTownForTesting(undefined, true);
-      try {
-        await apiClient.sendChat({
-          coveyTownID: nanoid(),
-          sessionToken: nanoid(),
-          message: 'hello',
-        });
-        fail('Expected an error to be thrown by sendChat but none thrown');
-      } catch (err) {
-        // OK, expected an error
-        // TODO this should really check to make sure it's the *right* error, but we didn't specify
-        // the format of the exception :(
-      }
-    });
-    it('Accept a sent message', async () => {
-      const pubTown1 = await createTownForTesting(undefined, true);
-      const privTown1 = await createTownForTesting(undefined, false);
-      const joinRes = await apiClient.joinTown({
-        userName: nanoid(),
-        coveyTownID: pubTown1.coveyTownID,
-      });
-      const res = await apiClient.sendChat({
-        sessionToken: joinRes.coveySessionToken,
-        coveyTownID: pubTown1.coveyTownID,
-        message: 'test message',
-      });
-      expect(res.message).toBeDefined();
-      expect(res.offset).toBeDefined();
-      const joinRes2 = await apiClient.joinTown({
-        userName: nanoid(),
-        coveyTownID: privTown1.coveyTownID,
-      });
-      const res2 = await apiClient.sendChat({
-        sessionToken: joinRes2.coveySessionToken,
-        coveyTownID: privTown1.coveyTownID,
-        message: 'test message',
-      });
-      expect(res2.message).toBeDefined();
-      expect(res2.offset).toBeDefined();
-    });
-  });
 });
