@@ -26,13 +26,15 @@ import Player, { ServerPlayer, UserLocation } from './classes/Player';
 import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClient';
 import Video from './classes/Video/Video';
 import ChatInput from './components/Chat/ChatInput';
+import { ChatMessage } from '../../services/roomService/src/types/chatrules';
 
 type CoveyAppUpdate =
   | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
-  | { action: 'weMoved'; location: UserLocation }
+  | { action: 'weMoved'; location: UserLocation }  | { action: 'messageSent', message: ChatMessage }
+  | { action: 'messageSent', message: ChatMessage }
   | { action: 'disconnect' }
   ;
 
@@ -92,6 +94,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
   }
 
   let updatePlayer;
+  let updateSender : Player;
   switch (update.action) {
     case 'doConnect':
       nextState.sessionToken = update.data.sessionToken;
@@ -129,6 +132,19 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       }
 
       break;
+
+      case 'messageSent':
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        updateSender = Player.fromServerPlayer(update.message.sender);
+        updatePlayer = nextState.players.find((p) => p.id === updateSender.id)
+         if (updatePlayer) {
+          updatePlayer.chatMessage = update.message
+          updatePlayer.message?.setText(update.message.message)
+         }
+        // eslint-disable-next-line no-console
+        console.log (update.message);
+        break;
+
     case 'playerDisconnect':
       nextState.players = nextState.players.filter((player) => player.id !== update.player.id);
 
@@ -172,6 +188,13 @@ async function GameController(initData: TownJoinResponse,
       dispatchAppUpdate({ action: 'playerMoved', player: Player.fromServerPlayer(player) });
     }
   });
+  
+  socket.on('messageSent', (message: ChatMessage) => {
+    // eslint-disable-next-line no-console
+    console.log('get message ', message);
+    dispatchAppUpdate({ action: 'messageSent', message});
+  });
+
   socket.on('playerDisconnect', (player: ServerPlayer) => {
     dispatchAppUpdate({ action: 'playerDisconnect', player: Player.fromServerPlayer(player) });
   });
