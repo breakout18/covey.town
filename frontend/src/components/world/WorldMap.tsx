@@ -132,7 +132,7 @@ class CoveyGameScene extends Phaser.Scene {
       myPlayer.label?.setY(player.location.y + 50);
       
       if(player.chatMessage)
-          myPlayer.message?.setText(player.chatMessage.message);
+      myPlayer.message?.setText(player.chatMessage.message);
       myPlayer.message?.setX(player.location.x);
       myPlayer.message?.setY(player.location.y - 30);
 

@@ -32,6 +32,7 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
+  // TODO get chatHistory from useCoveyAppState()
   const {apiClient, currentTownID, sessionToken } = useCoveyAppState();
   const [message, setMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -102,6 +103,7 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
                   <Th>user</Th>
                   </Tr></Thead>
                   <Tbody>
+                    {/* Just have this display the message from the messages we get from chatHistory in state */}
                     {messageHistory.map((msg) => (
                     <Tr key={msg.id}><Td role='cell'>{msg.timestamp}</Td><Td
                       role='cell'>{msg.message}</Td>
