@@ -28,8 +28,8 @@ import Video from './classes/Video/Video';
 import ChatInput from './components/Chat/ChatInput';
 
 type CoveyAppUpdate =
-  // TODO Add chatHistory to doConnect.
-  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
+  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], 
+    chatHistory: ChatMessage[], emitMovement: (location: UserLocation) => void } }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
@@ -40,9 +40,9 @@ type CoveyAppUpdate =
 
 function defaultAppState(): CoveyAppState {
   return {
-    // TODO initialize empty chatHistory
     nearbyPlayers: { nearbyPlayers: [] },
     players: [],
+    chatHistory: [],
     myPlayerID: '',
     currentTownFriendlyName: '',
     currentTownID: '',
@@ -60,12 +60,12 @@ function defaultAppState(): CoveyAppState {
 }
 function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyAppState {
   const nextState = {
-    // TODO set chatHistory to one from state
     sessionToken: state.sessionToken,
     currentTownFriendlyName: state.currentTownFriendlyName,
     currentTownID: state.currentTownID,
     currentTownIsPubliclyListed: state.currentTownIsPubliclyListed,
     myPlayerID: state.myPlayerID,
+    chatHistory: state.chatHistory,
     players: state.players,
     currentLocation: state.currentLocation,
     nearbyPlayers: state.nearbyPlayers,
@@ -99,7 +99,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
   let updateSender : Player;
   switch (update.action) {
     case 'doConnect':
-      // TODO set chatHistory to one from update
       nextState.sessionToken = update.data.sessionToken;
       nextState.myPlayerID = update.data.myPlayerID;
       nextState.currentTownFriendlyName = update.data.townFriendlyName;
@@ -109,6 +108,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       nextState.emitMovement = update.data.emitMovement;
       nextState.socket = update.data.socket;
       nextState.players = update.data.players;
+      nextState.chatHistory = update.data.chatHistory;
       break;
     case 'addPlayer':
       nextState.players = nextState.players.concat([update.player]);
@@ -138,8 +138,8 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
 
       case 'messageSent':
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        // TODO update chatHistory with new message, see 'addPlayer' for template.
         updateSender = Player.fromServerPlayer(update.message.sender);
+        nextState.chatHistory = nextState.chatHistory.concat([update.message]);
         updatePlayer = nextState.players.find((p) => p.id === updateSender.id)
          if (updatePlayer) {
           updatePlayer.chatMessage = update.message
@@ -213,7 +213,6 @@ async function GameController(initData: TownJoinResponse,
   dispatchAppUpdate({
     action: 'doConnect',
     data: {
-      // TODO set chatHistory to default
       sessionToken,
       userName: video.userName,
       townFriendlyName: roomName,
@@ -223,6 +222,8 @@ async function GameController(initData: TownJoinResponse,
       emitMovement,
       socket,
       players: initData.currentPlayers.map((sp) => Player.fromServerPlayer(sp)),
+      // Is this the  default chat history?
+      chatHistory: [],
     },
   });
   return true;
