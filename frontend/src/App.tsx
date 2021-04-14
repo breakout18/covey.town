@@ -36,6 +36,7 @@ type CoveyAppUpdate =
   | { action: 'weMoved'; location: UserLocation }  | { action: 'messageSent', message: ChatMessage }
   | { action: 'messageSent', message: ChatMessage }
   | { action: 'disconnect' }
+  | { action: 'cleanMessage' }
   ;
 
 function defaultAppState(): CoveyAppState {
@@ -96,7 +97,9 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
   }
 
   let updatePlayer;
-  let updateSender : Player;
+  let updateSender: Player;
+  let currentTime: number;
+
   switch (update.action) {
     case 'doConnect':
       // TODO set chatHistory to one from update
@@ -137,17 +140,24 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       break;
 
       case 'messageSent':
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         // TODO update chatHistory with new message, see 'addPlayer' for template.
         updateSender = Player.fromServerPlayer(update.message.sender);
         updatePlayer = nextState.players.find((p) => p.id === updateSender.id)
          if (updatePlayer) {
-          updatePlayer.chatMessage = update.message
-          updatePlayer.message?.setText(update.message.message)
-         }
+          updatePlayer.chatMessage = update.message;
+        }
         // eslint-disable-next-line no-console
         console.log (update.message);
         break;
+
+    case 'cleanMessage':
+      currentTime = Date.now();
+      nextState.players.forEach((p: Player) => {
+        if ((p.chatMessage) && (currentTime - p.chatMessage.timestamp > 5000)) { // current timeout 5 sectonds
+          p.removeMessage();
+        }
+      })
+      break;
 
     case 'playerDisconnect':
       nextState.players = nextState.players.filter((player) => player.id !== update.player.id);
@@ -194,8 +204,6 @@ async function GameController(initData: TownJoinResponse,
   });
   
   socket.on('messageSent', (message: ChatMessage) => {
-    // eslint-disable-next-line no-console
-    console.log('get message ', message);
     dispatchAppUpdate({ action: 'messageSent', message});
   });
 
@@ -236,6 +244,14 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     return true;
   }, [dispatchAppUpdate]);
   const videoInstance = Video.instance();
+
+  useEffect(() => {
+    function refreshMessage() {
+      dispatchAppUpdate({ action: 'cleanMessage'});
+    }
+    const timer = setInterval(() => {refreshMessage()}, 2000);
+    return () => clearInterval(timer);
+  });
 
   const { setOnDisconnect } = props;
   useEffect(() => {

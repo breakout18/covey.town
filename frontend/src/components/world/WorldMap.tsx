@@ -91,8 +91,10 @@ class CoveyGameScene extends Phaser.Scene {
       myPlayer = new Player(player.id, player.userName, location);
       this.players.push(myPlayer);
     }
+
     if (this.id !== myPlayer.id && this.physics && player.location) {
       let { sprite } = myPlayer;
+
       if (!sprite) {
         sprite = this.physics.add
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -129,10 +131,13 @@ class CoveyGameScene extends Phaser.Scene {
       sprite.setX(player.location.x);
       sprite.setY(player.location.y);
       myPlayer.label?.setX(player.location.x);
-      myPlayer.label?.setY(player.location.y + 50);
+      myPlayer.label?.setY(player.location.y + 40);
       
-      if(player.chatMessage)
-      myPlayer.message?.setText(player.chatMessage.message);
+      if (player.chatMessage)
+        myPlayer.message?.setText(player.chatMessage.message);
+      else
+        myPlayer.message?.setText('');
+
       myPlayer.message?.setX(player.location.x);
       myPlayer.message?.setY(player.location.y - 30);
 
@@ -188,8 +193,10 @@ class CoveyGameScene extends Phaser.Scene {
       const body = this.player.sprite.body as Phaser.Physics.Arcade.Body;
 
       const myPlayer = this.players.find((p) => p.id === this.id);
-      if (myPlayer && myPlayer.message) 
-        this.player.message = myPlayer.message
+      if (myPlayer && myPlayer.chatMessage)
+          this.player.message.setText(myPlayer.chatMessage.message);
+      else
+          this.player.message.setText('');
 
       // Stop any previous movement from the last frame
       body.setVelocity(0);
@@ -232,7 +239,7 @@ class CoveyGameScene extends Phaser.Scene {
 
       const isMoving = primaryDirection !== undefined;
       this.player.label.setX(body.x);
-      this.player.label.setY(body.y + 50);
+      this.player.label.setY(body.y + 40);
       this.player.message.setX(body.x);
       this.player.message.setY(body.y - 30);      if (!this.lastLocation
         || this.lastLocation.x !== body.x
@@ -337,7 +344,7 @@ class CoveyGameScene extends Phaser.Scene {
       .setSize(30, 40)
       .setOffset(0, 24);
       
-    const label = this.add.text(spawnPoint.x, spawnPoint.y + 50, '(You)', {
+    const label = this.add.text(spawnPoint.x, spawnPoint.y + 40, '(You)', {
         font: '18px monospace',
       color: '#000000',
       // padding: {x: 20, y: 10},

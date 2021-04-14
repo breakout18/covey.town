@@ -31,7 +31,6 @@ export default class Player {
 
   removeMessage() : void {
     this.chatMessage = undefined;
-    this.message?.destroy();
   }
 
 
