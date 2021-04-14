@@ -134,10 +134,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.get('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
     try {
-      const result = townChatHistoryHandler({
-        coveyTownID: req.params.coveyTownID,
-        offset: req.params.offset,
-        limit: Number(req.params.limit),
+      const offset = req.query.offset ? req.query.offset.toString() : '';
+      const limit = req.query.limit ? Number(req.query.limit) : 10;
+      const result = await townChatHistoryHandler({
+        coveyTownID: req.params.townID,
+        offset,
+        limit,
       });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {

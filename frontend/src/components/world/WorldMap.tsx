@@ -138,6 +138,23 @@ class CoveyGameScene extends Phaser.Scene {
 
   update() {
     if (this.paused) {
+      if (this.player && this.cursors) {
+        const prevVelocity = this.player.sprite.body.velocity.clone();
+        const body = this.player.sprite.body as Phaser.Physics.Arcade.Body;
+  
+        // Stop any previous movement from the last frame
+        body.setVelocity(0);
+        // Not moving
+        this.player.sprite.anims.stop();
+        // If we were moving, pick and idle frame to use
+        if (prevVelocity.x < 0) {
+          this.player.sprite.setTexture('atlas', 'misa-left');
+        } else if (prevVelocity.x > 0) {
+          this.player.sprite.setTexture('atlas', 'misa-right');
+        } else if (prevVelocity.y < 0) {
+          this.player.sprite.setTexture('atlas', 'misa-back');
+        } else if (prevVelocity.y > 0) this.player.sprite.setTexture('atlas', 'misa-front');
+      }
       return;
     }
     if (this.player && this.cursors) {
@@ -414,13 +431,13 @@ class CoveyGameScene extends Phaser.Scene {
     }
   }
 
-  pauseListening() {
-    this.input.keyboard.enabled = false;
-  }
+  // pauseListening() {
+  //   this.input.keyboard.enabled = false;
+  // }
 
-  resumeListening() {
-    this.input.keyboard.enabled = true;
-  }
+  // resumeListening() {
+  //   this.input.keyboard.enabled = true;
+  // }
 
   pause() {
     this.paused = true;
@@ -469,12 +486,12 @@ export default function WorldMap(): JSX.Element {
       video.unPauseGame = () => {
         newGameScene.resume();
       }
-      video.pauseListeners = () => {
-        newGameScene.pauseListening();
-      }
-      video.unPauseListeners = () => {
-        newGameScene.resumeListening();
-      }
+      // video.pauseListeners = () => {
+      //   newGameScene.pauseListening();
+      // }
+      // video.unPauseListeners = () => {
+      //   newGameScene.resumeListening();
+      // }
     }
     return () => {
       game.destroy(true);
