@@ -181,7 +181,7 @@ export default class TownsServiceClient {
   }
 
   async listHistory(requestData: TownChatHistoryRequest): Promise<TownChatHistoryResponse> {
-    const responseWrapper = await this._axios.get<ResponseEnvelope<TownChatHistoryResponse>>(`/towns/${requestData.coveyTownID}/chat`, {params: requestData});
+    const responseWrapper = await this._axios.get<ResponseEnvelope<TownChatHistoryResponse>>(`/towns/${requestData.coveyTownID}/chat`, {params: {limit: requestData.limit, offset: requestData.offset}});
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
