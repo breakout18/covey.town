@@ -7,7 +7,7 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
 // https://medium.com/@michaelwesthadley/modular-game-worlds-in-phaser-3-tilemaps-1-958fc7e6bbd6
 class CoveyGameScene extends Phaser.Scene {
   private player?: {
-    sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, label: Phaser.GameObjects.Text
+    sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, label: Phaser.GameObjects.Text, message: Phaser.GameObjects.Text
   };
 
   private id?: string;
@@ -33,10 +33,11 @@ class CoveyGameScene extends Phaser.Scene {
 
   private emitMovement: (loc: UserLocation) => void;
 
-  constructor(video: Video, emitMovement: (loc: UserLocation) => void) {
+  constructor(video: Video, emitMovement: (loc: UserLocation) => void, id: string) {
     super('PlayGame');
     this.video = video;
     this.emitMovement = emitMovement;
+    this.id = id;
   }
 
   preload() {
@@ -62,6 +63,7 @@ class CoveyGameScene extends Phaser.Scene {
       if (disconnectedPlayer.sprite) {
         disconnectedPlayer.sprite.destroy();
         disconnectedPlayer.label?.destroy();
+        disconnectedPlayer.message?.destroy();
       }
     });
     // Remove disconnected players from list
@@ -103,14 +105,37 @@ class CoveyGameScene extends Phaser.Scene {
           color: '#000000',
           backgroundColor: '#ffffff',
         });
+
+        let message: Phaser.GameObjects.Text;
+        if (myPlayer.chatMessage) {
+          message = this.add.text(0, 0, myPlayer.chatMessage.message, {
+            font: '18px monospace',
+            color: '#000000',
+            backgroundColor: '#fffffF',
+          });
+        } else {
+          message = this.add.text(0, 0, '', {
+            font: '18px monospace',
+            color: '#000000',
+            backgroundColor: '#fffffF',
+          });
+        }
+        
         myPlayer.label = label;
         myPlayer.sprite = sprite;
+        myPlayer.message = message;
       }
       if (!sprite.anims) return;
       sprite.setX(player.location.x);
       sprite.setY(player.location.y);
       myPlayer.label?.setX(player.location.x);
-      myPlayer.label?.setY(player.location.y - 20);
+      myPlayer.label?.setY(player.location.y + 50);
+      
+      if(player.chatMessage)
+          myPlayer.message?.setText(player.chatMessage.message);
+      myPlayer.message?.setX(player.location.x);
+      myPlayer.message?.setY(player.location.y - 30);
+
       if (player.location.moving) {
         sprite.anims.play(`misa-${player.location.rotation}-walk`, true);
       } else {
@@ -162,6 +187,10 @@ class CoveyGameScene extends Phaser.Scene {
       const prevVelocity = this.player.sprite.body.velocity.clone();
       const body = this.player.sprite.body as Phaser.Physics.Arcade.Body;
 
+      const myPlayer = this.players.find((p) => p.id === this.id);
+      if (myPlayer && myPlayer.message) 
+        this.player.message = myPlayer.message
+
       // Stop any previous movement from the last frame
       body.setVelocity(0);
 
@@ -203,8 +232,9 @@ class CoveyGameScene extends Phaser.Scene {
 
       const isMoving = primaryDirection !== undefined;
       this.player.label.setX(body.x);
-      this.player.label.setY(body.y - 20);
-      if (!this.lastLocation
+      this.player.label.setY(body.y + 50);
+      this.player.message.setX(body.x);
+      this.player.message.setY(body.y - 30);      if (!this.lastLocation
         || this.lastLocation.x !== body.x
         || this.lastLocation.y !== body.y
         || (isMoving && this.lastLocation.rotation !== primaryDirection)
@@ -306,15 +336,25 @@ class CoveyGameScene extends Phaser.Scene {
       .sprite(spawnPoint.x, spawnPoint.y, 'atlas', 'misa-front')
       .setSize(30, 40)
       .setOffset(0, 24);
-    const label = this.add.text(spawnPoint.x, spawnPoint.y - 20, '(You)', {
-      font: '18px monospace',
+      
+    const label = this.add.text(spawnPoint.x, spawnPoint.y + 50, '(You)', {
+        font: '18px monospace',
       color: '#000000',
       // padding: {x: 20, y: 10},
       backgroundColor: '#ffffff',
     });
+
+    const message = this.add.text (spawnPoint.x, spawnPoint.y - 30, '', {
+      font: '18px monospace',
+      color: '#000000',
+      backgroundColor: '#ffff0F', 
+      }); // no message initially
+    message.visible = true;
+
     this.player = {
       sprite,
-      label
+      label,
+      message
     };
 
     /* Configure physics overlap behavior for when the player steps into
@@ -458,7 +498,7 @@ class CoveyGameScene extends Phaser.Scene {
 export default function WorldMap(): JSX.Element {
   const video = Video.instance();
   const {
-    emitMovement, players,
+    emitMovement, players, myPlayerID
   } = useCoveyAppState();
   const [gameScene, setGameScene] = useState<CoveyGameScene>();
   useEffect(() => {
@@ -477,7 +517,7 @@ export default function WorldMap(): JSX.Element {
 
     const game = new Phaser.Game(config);
     if (video) {
-      const newGameScene = new CoveyGameScene(video, emitMovement);
+      const newGameScene = new CoveyGameScene(video, emitMovement, myPlayerID);
       setGameScene(newGameScene);
       game.scene.add('coveyBoard', newGameScene, true);
       video.pauseGame = () => {
@@ -496,7 +536,7 @@ export default function WorldMap(): JSX.Element {
     return () => {
       game.destroy(true);
     };
-  }, [video, emitMovement]);
+  }, [video, emitMovement, myPlayerID]);
 
   const deepPlayers = JSON.stringify(players);
   useEffect(() => {
