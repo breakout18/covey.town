@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client'; 
 import { ChakraProvider } from '@chakra-ui/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import assert from 'assert';

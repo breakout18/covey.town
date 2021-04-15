@@ -40,6 +40,7 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
     setIsLoading(true);
     try {
       await apiClient.sendChat({coveyTownID: currentTownID, sessionToken, message});
+      setMessage('');
     }
     catch (err) {
       toast({
