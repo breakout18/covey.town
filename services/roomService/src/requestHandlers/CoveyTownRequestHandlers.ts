@@ -226,7 +226,18 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
     // Should tell town to send message, need to figure out how to get player
     const senderSession = town.getSessionByToken(requestData.sessionToken);
     if (senderSession) {
-      success = town.sendChat({ id: offset, sender: senderSession.player, message: cleanedMessage, timestamp: curTime});
+      try {
+        success = town.sendChat({ id: offset, sender: senderSession.player, message: cleanedMessage, timestamp: curTime});
+      } catch (e) {
+        return {
+          isOK: false,
+          response: {
+            message: cleanedMessage,
+            offset,
+          },
+          message: e.message,
+        };
+      }
     }
   }
   return {

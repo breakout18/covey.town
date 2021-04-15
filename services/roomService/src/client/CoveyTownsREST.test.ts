@@ -5,8 +5,11 @@ import { nanoid } from 'nanoid';
 import assert from 'assert';
 import { AddressInfo } from 'net';
 
-import TownsServiceClient, { TownListResponse } from './TownsServiceClient';
+import TownsServiceClient, { TownJoinResponse, TownListResponse } from './TownsServiceClient';
 import addTownRoutes from '../router/towns';
+import CoveyTownController from '../lib/CoveyTownController';
+import Player from '../types/Player';
+import CoveyTownsStore from '../lib/CoveyTownsStore';
 
 type TestTownData = {
   friendlyName: string, coveyTownID: string,
@@ -239,8 +242,15 @@ describe('TownsServiceAPIREST', () => {
   });
 
   describe('CoveyChatSendAPI', () => {
+    let testingTown: TestTownData;
+    let joinRes: TownJoinResponse;
+    const message = 'test message';
+    beforeEach(async () => {
+      const townName = `CoveyChatSendAPI tests ${nanoid()}`;
+      testingTown = await createTownForTesting(townName, true);
+      joinRes = await apiClient.joinTown({coveyTownID: testingTown.coveyTownID, userName: nanoid()});
+    });
     it('Throws an error if the town does not exist', async () => {
-      await createTownForTesting(undefined, true);
       try {
         await apiClient.sendChat({
           coveyTownID: nanoid(),
@@ -254,31 +264,41 @@ describe('TownsServiceAPIREST', () => {
         // the format of the exception :(
       }
     });
-    it('Accept a sent message', async () => {
-      const pubTown1 = await createTownForTesting(undefined, true);
-      const privTown1 = await createTownForTesting(undefined, false);
-      const joinRes = await apiClient.joinTown({
-        userName: nanoid(),
-        coveyTownID: pubTown1.coveyTownID,
-      });
+    it('Accept a sent message to a public town', async () => {
       const res = await apiClient.sendChat({
         sessionToken: joinRes.coveySessionToken,
-        coveyTownID: pubTown1.coveyTownID,
-        message: 'test message',
+        coveyTownID: testingTown.coveyTownID,
+        message,
+      });
+      expect(res.message).toBeDefined();
+      expect(res.message === message);
+      expect(res.offset).toBeDefined();
+    });
+    it('Accept a sent message to a private town', async () => {
+      const privTown = await createTownForTesting(undefined, false);
+      const joinRes2 = await apiClient.joinTown({
+        userName: nanoid(),
+        coveyTownID: privTown.coveyTownID,
+      });
+      const res = await apiClient.sendChat({
+        sessionToken: joinRes2.coveySessionToken,
+        coveyTownID: privTown.coveyTownID,
+        message,
       });
       expect(res.message).toBeDefined();
       expect(res.offset).toBeDefined();
-      const joinRes2 = await apiClient.joinTown({
-        userName: nanoid(),
-        coveyTownID: privTown1.coveyTownID,
-      });
-      const res2 = await apiClient.sendChat({
-        sessionToken: joinRes2.coveySessionToken,
-        coveyTownID: privTown1.coveyTownID,
-        message: 'test message',
-      });
-      expect(res2.message).toBeDefined();
-      expect(res2.offset).toBeDefined();
+    });
+    it('Throws an error if the message contains a bad string.', async () => {
+      try {
+        await apiClient.sendChat({
+          sessionToken: joinRes.coveySessionToken,
+          coveyTownID: testingTown.coveyTownID,
+          message: 'dang',
+        });
+        fail('Expected an error to be thrown by sendChat but none thrown');
+      } catch (err) {
+        expect(err.message).toBe('Error processing request: Message contains bad words.');
+      }
     });
   });
 });

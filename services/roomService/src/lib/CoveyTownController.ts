@@ -143,15 +143,18 @@ export default class CoveyTownController {
    */
   
   sendChat(messageData: ChatMessage): boolean {
-    const illegalMessage = this.chatRules.some(rule => rule.check(messageData.message));
-    if (!illegalMessage) { // ^^ That checks if it's NOT legal... So this is technically "if not illegal"
-      this._chatHistory.push(messageData);
-      // Notify the other players
-      this._listeners.forEach((listener) => listener.onMessageSent(messageData));
-      return true;
-    }
+
+    this.chatRules.forEach((rule) => {
+      if (rule.check(messageData.message)) {
+        throw new Error(rule.responseOnFail);
+      }
+    });
+    // ^^ That checks if it's NOT legal... So this is technically "if not illegal"
+    this._chatHistory.push(messageData);
+    // Notify the other players
+    this._listeners.forEach((listener) => listener.onMessageSent(messageData));
+    return true;
     // }
-    return false;
   }
 
   /**

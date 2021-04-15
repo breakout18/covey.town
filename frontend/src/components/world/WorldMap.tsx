@@ -478,14 +478,6 @@ class CoveyGameScene extends Phaser.Scene {
     }
   }
 
-  // pauseListening() {
-  //   this.input.keyboard.enabled = false;
-  // }
-
-  // resumeListening() {
-  //   this.input.keyboard.enabled = true;
-  // }
-
   pause() {
     this.paused = true;
     this.previouslyCapturedKeys = this.input.keyboard.getCaptures();
@@ -533,12 +525,6 @@ export default function WorldMap(): JSX.Element {
       video.unPauseGame = () => {
         newGameScene.resume();
       }
-      // video.pauseListeners = () => {
-      //   newGameScene.pauseListening();
-      // }
-      // video.unPauseListeners = () => {
-      //   newGameScene.resumeListening();
-      // }
     }
     return () => {
       game.destroy(true);
