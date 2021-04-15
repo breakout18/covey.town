@@ -124,7 +124,7 @@ The toggleable chat history displays all the messages stored in the `chatHistory
 
 All defined responses by the server are of the form:
 
-> ```json
+> ```ts
 > {
 >     isOK: false,
 >     response: {
@@ -137,7 +137,7 @@ All defined responses by the server are of the form:
 
 ### Town with ID does not exist.
 If the request provides a town ID which does not exist, the server will respond to the client by notifying them that the message was *not* sent.
-```json
+```ts
 {
     ...
     message: "Error processing request: Town with ID does not exist.",
@@ -146,7 +146,7 @@ If the request provides a town ID which does not exist, the server will respond 
 
 ### Session with sessionToken does not exist.
 If the request provides a `sessionToken` which does not refer to a session connected to the given town, the server will respond to the client by notifying them that the message was *not* sent.
-```json
+```ts
 {
     ...
     message: "Error processing request: Session with sessionToken does not exist.",
@@ -157,7 +157,7 @@ If the request provides a `sessionToken` which does not refer to a session conne
 > **Note:** The descriptive rule error message is given by a rule's `responseOnFail` property.
 
 If the message breaks any of the chat rules (e.g., it contains a word in `BANNED_WORDS`), the server will respond to the client by notifying them that the message was *not* sent and what rule was broken.
-```json
+```ts
 {
     ...
     message: "Error processing request: Message contains bad words.",
