@@ -28,12 +28,16 @@ import Video from './classes/Video/Video';
 import ChatInput from './components/Chat/ChatInput';
 
 type CoveyAppUpdate =
-  // TODO Add chatHistory to doConnect.
-  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
+  | {
+    action: 'doConnect'; data: {
+      userName: string, townFriendlyName: string, townID: string, townIsPubliclyListed: boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[],
+      chatHistory: ChatMessage[], emitMovement: (location: UserLocation) => void
+    }
+  }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
-  | { action: 'weMoved'; location: UserLocation }  | { action: 'messageSent', message: ChatMessage }
+  | { action: 'weMoved'; location: UserLocation } | { action: 'messageSent', message: ChatMessage }
   | { action: 'messageSent', message: ChatMessage }
   | { action: 'disconnect' }
   | { action: 'cleanMessage' }
@@ -41,9 +45,9 @@ type CoveyAppUpdate =
 
 function defaultAppState(): CoveyAppState {
   return {
-    // TODO initialize empty chatHistory
     nearbyPlayers: { nearbyPlayers: [] },
     players: [],
+    chatHistory: [],
     myPlayerID: '',
     currentTownFriendlyName: '',
     currentTownID: '',
@@ -61,12 +65,12 @@ function defaultAppState(): CoveyAppState {
 }
 function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyAppState {
   const nextState = {
-    // TODO set chatHistory to one from state
     sessionToken: state.sessionToken,
     currentTownFriendlyName: state.currentTownFriendlyName,
     currentTownID: state.currentTownID,
     currentTownIsPubliclyListed: state.currentTownIsPubliclyListed,
     myPlayerID: state.myPlayerID,
+    chatHistory: state.chatHistory,
     players: state.players,
     currentLocation: state.currentLocation,
     nearbyPlayers: state.nearbyPlayers,
@@ -102,7 +106,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
 
   switch (update.action) {
     case 'doConnect':
-      // TODO set chatHistory to one from update
       nextState.sessionToken = update.data.sessionToken;
       nextState.myPlayerID = update.data.myPlayerID;
       nextState.currentTownFriendlyName = update.data.townFriendlyName;
@@ -112,6 +115,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       nextState.emitMovement = update.data.emitMovement;
       nextState.socket = update.data.socket;
       nextState.players = update.data.players;
+      nextState.chatHistory = update.data.chatHistory;
       break;
     case 'addPlayer':
       nextState.players = nextState.players.concat([update.player]);
@@ -139,16 +143,16 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
 
       break;
 
-      case 'messageSent':
-        // TODO update chatHistory with new message, see 'addPlayer' for template.
-        updateSender = Player.fromServerPlayer(update.message.sender);
-        updatePlayer = nextState.players.find((p) => p.id === updateSender.id)
-         if (updatePlayer) {
-          updatePlayer.chatMessage = update.message;
-        }
-        // eslint-disable-next-line no-console
-        console.log (update.message);
-        break;
+    case 'messageSent':
+      updateSender = Player.fromServerPlayer(update.message.sender);
+      nextState.chatHistory = nextState.chatHistory.concat([update.message]);
+      updatePlayer = nextState.players.find((p) => p.id === updateSender.id)
+      if (updatePlayer) {
+        updatePlayer.chatMessage = update.message;
+      }
+      // eslint-disable-next-line no-console
+      console.log(update.message);
+      break;
 
     case 'cleanMessage':
       currentTime = Date.now();
@@ -202,9 +206,9 @@ async function GameController(initData: TownJoinResponse,
       dispatchAppUpdate({ action: 'playerMoved', player: Player.fromServerPlayer(player) });
     }
   });
-  
+
   socket.on('messageSent', (message: ChatMessage) => {
-    dispatchAppUpdate({ action: 'messageSent', message});
+    dispatchAppUpdate({ action: 'messageSent', message });
   });
 
   socket.on('playerDisconnect', (player: ServerPlayer) => {
@@ -221,7 +225,6 @@ async function GameController(initData: TownJoinResponse,
   dispatchAppUpdate({
     action: 'doConnect',
     data: {
-      // TODO set chatHistory to default
       sessionToken,
       userName: video.userName,
       townFriendlyName: roomName,
@@ -231,6 +234,8 @@ async function GameController(initData: TownJoinResponse,
       emitMovement,
       socket,
       players: initData.currentPlayers.map((sp) => Player.fromServerPlayer(sp)),
+      // Is this the  default chat history?
+      chatHistory: [],
     },
   });
   return true;
@@ -247,9 +252,9 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
 
   useEffect(() => {
     function refreshMessage() {
-      dispatchAppUpdate({ action: 'cleanMessage'});
+      dispatchAppUpdate({ action: 'cleanMessage' });
     }
-    const timer = setInterval(() => {refreshMessage()}, 2000);
+    const timer = setInterval(() => { refreshMessage() }, 2000);
     return () => clearInterval(timer);
   });
 

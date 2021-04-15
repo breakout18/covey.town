@@ -1,5 +1,4 @@
 import React, { useState} from 'react';
-import { MdCached } from 'react-icons/md';
 import { useDisclosure } from "react-use-disclosure";
 import {
   Button,
@@ -24,49 +23,23 @@ import {
 } from '@chakra-ui/react';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 import Video from '../../classes/Video/Video';
-import { ChatMessage } from '../../../../services/roomService/src/types/chatrules';
-
 
 interface ChatInputProps {
   maxLength: number,
 }
 
 export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
-  // TODO get chatHistory from useCoveyAppState()
-  const {apiClient, currentTownID, sessionToken } = useCoveyAppState();
+  const {apiClient, chatHistory, currentTownID, sessionToken } = useCoveyAppState();
   const [message, setMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [messageHistory, setMessageHistory] = useState<ChatMessage[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
-  const [offsetToLoad, setOffsetToLoad] = useState<string>('');
-  const [historyLimit] = useState<number>(10);
 
   const videoInstance = Video.instance();
   const toast = useToast();
 
-  const loadHistory = async () => {
-    setIsLoadingHistory(true);
-    try {
-      const response = await apiClient.listHistory({coveyTownID: currentTownID, offset: offsetToLoad, limit: historyLimit});
-      setOffsetToLoad(response.offset);
-      setMessageHistory(messageHistory.concat(response.messages));
-    }
-    catch (err) {
-      toast({
-        title: 'Unable to load history',
-        description: err.toString(),
-        status: 'error'
-      })
-    }
-    finally {
-      setIsLoadingHistory(false);
-    }
-  }
-
   const sendCurrentMessage = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.sendChat({coveyTownID: currentTownID, sessionToken, message});
+      await apiClient.sendChat({coveyTownID: currentTownID, sessionToken, message});
     }
     catch (err) {
       toast({
@@ -82,14 +55,10 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
 
   function DisplayHistory() {
     const { isOpen, open, close } = useDisclosure();
-    const onOpen = () => {
-      open();
-      loadHistory();
-    };
 
     return (
       <>
-        <Button onClick={onOpen}>Message History</Button>
+        <Button onClick={open}>Message History</Button>
   
         <Modal scrollBehavior="inside" blockScrollOnMount={false} onClose={close} isOpen={isOpen} isCentered>
           <ModalOverlay />
@@ -103,19 +72,10 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
                   <Th>user</Th>
                   </Tr></Thead>
                   <Tbody>
-                    {/* Just have this display the message from the messages we get from chatHistory in state */}
-                    {messageHistory.map((msg) => (
+                    {chatHistory.map((msg) => (
                     <Tr key={msg.id}><Td role='cell'>{msg.timestamp}</Td><Td
                       role='cell'>{msg.message}</Td>
-                      <Td role='cell'>{msg.sender.userName}</Td></Tr>))}
-                    <Button 
-                    size="sm" 
-                    onClick={loadHistory} 
-                    leftIcon={<MdCached />} 
-                    colorScheme="pink" 
-                    isLoading={isLoadingHistory}
-                    variant="solid" >
-                      Load More</Button>
+                      <Td role='cell'>{msg.sender._userName}</Td></Tr>))}
                 </Tbody>
                 </Table>
             </ModalBody>
