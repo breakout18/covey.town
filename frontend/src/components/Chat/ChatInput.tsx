@@ -20,7 +20,14 @@ import {
   Tr,
   FormHelperText,
   useToast,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  Collapse,
+  Box,
 } from '@chakra-ui/react';
+import Picker, { IEmojiData } from 'emoji-picker-react';
+import { Search2Icon } from '@chakra-ui/icons';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 import Video from '../../classes/Video/Video';
 
@@ -32,9 +39,14 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
   const {apiClient, chatHistory, currentTownID, sessionToken } = useCoveyAppState();
   const [message, setMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
 
   const videoInstance = Video.instance();
   const toast = useToast();
+
+  const onEmojiClick = (emojiObject: IEmojiData) => {
+    setMessage(`${message}${emojiObject.emoji}`)
+  };
 
   const sendCurrentMessage = async () => {
     setIsLoading(true);
@@ -89,38 +101,47 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
     )
   }
 
-  return (
-    <>
-      {/* <form>
-        <Stack>
-          <Box p="4" borderWidth="1px" borderRadius="lg">
-            <Heading as="span" size="sm">Chat</Heading> */}
-      <FormControl id="chatBox">
-        <FormLabel htmlFor="chatMessage">Send message</FormLabel>
-        <Input name="chatMessage" placeholder="Enter message..."
-                value={message}
-                isInvalid={message.length > maxLength}
-                focusBorderColor={message.length > maxLength ? 'red.500' : 'blue.500'}
-                onFocus={videoInstance?.pauseGame}
-                onBlur={videoInstance?.unPauseGame}
-                onChange={event => setMessage(event.target.value)}
-        />
-        <FormHelperText style={{'color': message.length > maxLength ? 'red' : ''}}>{`${message.length} / ${maxLength}`}</FormHelperText>
-        <Button
-            mt={4}
-            colorScheme="teal"
-            isLoading={isLoading}
-            isDisabled={message.length > maxLength}
-            type="submit"
-            onClick={sendCurrentMessage}
-          >
-            Submit
-          </Button>
-          {DisplayHistory()}
-      </FormControl>
-          {/* </Box>
-        </Stack>
-      </form> */}
-    </>
-  );
+  function DisplayChatInput() {
+    const { isOpen, toggle } = useDisclosure();
+
+    return (
+      <>
+        <FormControl id="chatBox" style={{width: '50%'}}>
+          <FormLabel htmlFor="chatMessage">Send message</FormLabel>
+          <InputGroup>
+            <Input name="chatMessage" placeholder="Enter message..."
+                    value={message}
+                    isInvalid={message.length > maxLength}
+                    focusBorderColor={message.length > maxLength ? 'red.500' : 'blue.500'}
+                    onFocus={videoInstance?.pauseGame}
+                    onBlur={videoInstance?.unPauseGame}
+                    onChange={event => setMessage(event.target.value)}
+            />
+            <InputRightElement>
+              <IconButton aria-label="Search emojis" icon={<Search2Icon />} onClick={toggle} />
+            </InputRightElement>
+          </InputGroup>
+          <Collapse in={isOpen} animateOpacity>
+          <Box onFocus={videoInstance?.pauseGame} onBlur={videoInstance?.unPauseGame}>
+            <Picker onEmojiClick={(_event, data) => onEmojiClick(data)} disableAutoFocus preload native/>
+          </Box>
+          </Collapse>
+          <FormHelperText style={{'color': message.length > maxLength ? 'red' : ''}}>{`${message.length} / ${maxLength}`}</FormHelperText>
+          <Button
+              mt={4}
+              colorScheme="teal"
+              isLoading={isLoading}
+              isDisabled={message.length > maxLength}
+              type="submit"
+              onClick={sendCurrentMessage}
+            >
+              Submit
+            </Button>
+            {DisplayHistory()}
+        </FormControl>
+      </>
+    );
+  }
+
+  return DisplayChatInput();
 }

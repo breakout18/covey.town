@@ -143,13 +143,12 @@ export default class CoveyTownController {
    */
   
   sendChat(messageData: ChatMessage): boolean {
-
+    // Check against each rule
     this.chatRules.forEach((rule) => {
       if (rule.check(messageData.message)) {
         throw new Error(rule.responseOnFail);
       }
     });
-    // ^^ That checks if it's NOT legal... So this is technically "if not illegal"
     this._chatHistory.push(messageData);
     // Notify the other players
     this._listeners.forEach((listener) => listener.onMessageSent(messageData));
