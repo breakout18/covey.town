@@ -239,9 +239,10 @@ class CoveyGameScene extends Phaser.Scene {
 
       const isMoving = primaryDirection !== undefined;
       this.player.label.setX(body.x);
-      this.player.label.setY(body.y + 40);
+      this.player.label.setY(body.y + 50);
       this.player.message.setX(body.x);
-      this.player.message.setY(body.y - 30);      if (!this.lastLocation
+      this.player.message.setY(body.y - 30);
+      if (!this.lastLocation
         || this.lastLocation.x !== body.x
         || this.lastLocation.y !== body.y
         || (isMoving && this.lastLocation.rotation !== primaryDirection)
@@ -343,9 +344,8 @@ class CoveyGameScene extends Phaser.Scene {
       .sprite(spawnPoint.x, spawnPoint.y, 'atlas', 'misa-front')
       .setSize(30, 40)
       .setOffset(0, 24);
-      
-    const label = this.add.text(spawnPoint.x, spawnPoint.y + 40, '(You)', {
-        font: '18px monospace',
+    const label = this.add.text(spawnPoint.x, spawnPoint.y + 50, '(You)', {
+      font: '18px monospace',
       color: '#000000',
       // padding: {x: 20, y: 10},
       backgroundColor: '#ffffff',
@@ -549,6 +549,21 @@ export default function WorldMap(): JSX.Element {
   useEffect(() => {
     gameScene?.updatePlayersLocations(players);
   }, [players, deepPlayers, gameScene]);
+
+  // useEffect( () => {
+  //   function refreshMessage() {
+  //     const currentTime = Date.now();
+
+  //     players.forEach ((p: Player) => {
+  //       if ((p.chatMessage && currentTime - p.chatMessage.timestamp > 10000)) {
+  //         p.message?.setText('');
+  //       }
+  //     })
+  //     gameScene?.updatePlayersLocations(players);
+  //   }
+  //   const timer= setInterval(() => {refreshMessage()}, 2000);
+  //   return () => clearInterval(timer)
+  // });
 
   return <div id="map-container"/>;
 }
