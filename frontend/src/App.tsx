@@ -30,14 +30,23 @@ import ChatInput from './components/Chat/ChatInput';
 type CoveyAppUpdate =
   | {
     action: 'doConnect'; data: {
-      userName: string, townFriendlyName: string, townID: string, townIsPubliclyListed: boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[],
-      chatHistory: ChatMessage[], emitMovement: (location: UserLocation) => void
+      userName: string,
+      townFriendlyName: string,
+      townID: string,
+      townIsPubliclyListed: boolean,
+      sessionToken: string,
+      myPlayerID: string,
+      socket: Socket,
+      players: Player[],
+      chatHistory: ChatMessage[],
+      emitMovement: (location: UserLocation) => void
     }
   }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
-  | { action: 'weMoved'; location: UserLocation } | { action: 'messageSent', message: ChatMessage }
+  | { action: 'weMoved'; location: UserLocation }
+  | { action: 'messageSent', message: ChatMessage }
   | { action: 'messageSent', message: ChatMessage }
   | { action: 'disconnect' }
   | { action: 'cleanMessage' }
@@ -234,7 +243,6 @@ async function GameController(initData: TownJoinResponse,
       emitMovement,
       socket,
       players: initData.currentPlayers.map((sp) => Player.fromServerPlayer(sp)),
-      // Is this the  default chat history?
       chatHistory: [],
     },
   });
