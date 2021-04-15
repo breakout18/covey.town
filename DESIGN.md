@@ -1,4 +1,6 @@
-- [# Quick Chat Documentation](#-quick-chat-documentation)
+# Quick Chat Documentation
+---
+
 - [Architecture](#architecture)
   - [High level overview](#high-level-overview)
   - [In-depth, step-by-step flow](#in-depth-step-by-step-flow)
@@ -21,13 +23,11 @@
   - [Modify socket implementation to support `sendChat` event.](#modify-socket-implementation-to-support-sendchat-event)
   - [Add `ChatInput` component to `App`.](#add-chatinput-component-to-app)
   - [Modify `WorldMap` to support showing messages above avatars.](#modify-worldmap-to-support-showing-messages-above-avatars)
-# Quick Chat Documentation
----
-
 ## Architecture
 
 
 ### High level overview
+
 ![architecture overview](architecture.svg "Architecture overview")
 
 ### In-depth, step-by-step flow
@@ -35,6 +35,8 @@ Consider a town with multiple connected players:
 - the ID of the town is `1A08F7F2`
 - the sender is connected to the town and their session token is `PbMc3xlssyAMAZrbeJ3mG`
 - the sender wants to say `hello town!`
+
+![flow diagram](flow_diagram.svg "Flow diagram")
 
 #### The sender sends a request via the REST API.
 
