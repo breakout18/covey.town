@@ -20,6 +20,7 @@
   - [Session with sessionToken does not exist.](#session-with-sessiontoken-does-not-exist)
   - [Message breaks validation rules](#message-breaks-validation-rules)
 - [Proposed changes to existing codebase](#proposed-changes-to-existing-codebase)
+  - [Add send chat REST API.](#add-send-chat-rest-api)
   - [Modify socket implementation to support `sendChat` event.](#modify-socket-implementation-to-support-sendchat-event)
   - [Add `ChatInput` component to `App`.](#add-chatinput-component-to-app)
   - [Modify `WorldMap` to support showing messages above avatars.](#modify-worldmap-to-support-showing-messages-above-avatars)
@@ -167,7 +168,75 @@ If the message breaks any of the chat rules (e.g., it contains a word in `BANNED
 ---
 ## Proposed changes to existing codebase
 
-  
+### Add send chat REST API.
+To be added:
+- `services/roomService/src/`
+  - `router/towns.ts`
+    - `+ app.post('/towns/:townID/chat', ...)`
+  - `requestHandlers/CoveyTownRequestHandlers.ts`
+    - `+ townChatSendHandler(requestData: TownChatSendRequest)`
+    - `+ TownChatSendResponse`
+    - `+ TownChatSendRequest`
+  - `lib/CoveyTownController.ts`
+    - `+ sendChat(messageData: ChatMessage)`
+    - `+ chatRules`
+  - `types/chatrules.ts`
+    - `+ ChatMessage`
+    - `+ ChatRule`
+
+To implement our send chat REST API, `towns.ts` must be edited to include support for our new resource:
+```ts
+app.post('/towns/:townID/chat', BodyParser.json(), async (req, res) => {
+  ...
+    const result = await townChatSendHandler({
+      coveyTownID: req.params.townID,
+      sessionToken: req.body.sessionToken,
+      message: req.body.message,
+    ...
+});
+``` 
+
+The client must pass the `sessionToken` and `message` in the body of the request. The router will parse the request to create a `TownChatSendRequest` and pass that to the `townChatSendHandler`, which must also be implemented:
+
+```ts
+async function townChatSendHandler(requestData: TownChatSendRequest): Promise<ResponseEnvelope<TownChatSendResponse>> {
+  ...
+  success = town.sendChat({ id: offset, sender: senderSession.player, message: cleanedMessage, timestamp: curTime});
+  ...
+  return {
+    isOK: success,
+    response: {
+      message: cleanedMessage,
+      offset,
+    },
+    message: errMessage || undefined,
+  };
+}
+```
+The handler will process the message and pass it to the `CoveyTownController`. If the request is valid. It will use the response from the controller to construct a `TownChatSendResponse`, which is the interface for the `response` value of the HTTP response body. In the controller:
+
+```ts
+sendChat(messageData: ChatMessage): boolean {
+...
+  this.chatRules.forEach((rule) => {
+    if (rule.check(messageData.message)) {
+      throw new Error(rule.responseOnFail);
+    }
+...
+}
+```
+
+The controller will ensure that the message does not break any rules. The `ChatRule` interface defines the structure of a rule:
+
+```ts
+interface ChatRule { name: string, check(msg: string): boolean, responseOnFail: string }
+```
+
+These rules can be created anywhere and added to the controller via accessing its `chatRule` property, which is simply an array of `ChatRule` objects.
+
+If the message passes every rule, all subscribed listeners will be notified and the message will be "sent" to all other clients. Otherwise, the client will recieve an error with a detailed description as to why their message was rejected.
+
+We believe this design is simple and extensible. Clients recieve descriptive error feedback and rules can be customized or created. Moreover, it does not affect any existing functionality. 
 ### Modify socket implementation to support `sendChat` event.
 To be modified:
 - `services/roomService/src/`
