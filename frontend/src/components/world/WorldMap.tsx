@@ -10,7 +10,7 @@ class CoveyGameScene extends Phaser.Scene {
     sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, label: Phaser.GameObjects.Text, message: Phaser.GameObjects.Text
   };
 
-  private id?: string;
+  private myPlayerID: string;
 
   private players: Player[] = [];
 
@@ -33,11 +33,11 @@ class CoveyGameScene extends Phaser.Scene {
 
   private emitMovement: (loc: UserLocation) => void;
 
-  constructor(video: Video, emitMovement: (loc: UserLocation) => void, id: string) {
+  constructor(video: Video, emitMovement: (loc: UserLocation) => void, myPlayerID : string) {
     super('PlayGame');
     this.video = video;
     this.emitMovement = emitMovement;
-    this.id = id;
+    this.myPlayerID = myPlayerID;
   }
 
   preload() {
@@ -91,8 +91,7 @@ class CoveyGameScene extends Phaser.Scene {
       myPlayer = new Player(player.id, player.userName, location);
       this.players.push(myPlayer);
     }
-
-    if (this.id !== myPlayer.id && this.physics && player.location) {
+    if (this.myPlayerID !== myPlayer.id && this.physics && player.location) {
       let { sprite } = myPlayer;
 
       if (!sprite) {
@@ -197,7 +196,7 @@ class CoveyGameScene extends Phaser.Scene {
       const prevVelocity = this.player.sprite.body.velocity.clone();
       const body = this.player.sprite.body as Phaser.Physics.Arcade.Body;
 
-      const myPlayer = this.players.find((p) => p.id === this.id);
+      const myPlayer = this.players.find((p) => p.id === this.myPlayerID);
       if (myPlayer && myPlayer.chatMessage)
           this.player.message.setText(myPlayer.chatMessage.message);
       else
@@ -506,7 +505,7 @@ class CoveyGameScene extends Phaser.Scene {
 export default function WorldMap(): JSX.Element {
   const video = Video.instance();
   const {
-    emitMovement, players, myPlayerID
+    emitMovement, players, myPlayerID,
   } = useCoveyAppState();
   const [gameScene, setGameScene] = useState<CoveyGameScene>();
   useEffect(() => {
