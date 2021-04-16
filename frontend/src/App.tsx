@@ -47,7 +47,6 @@ type CoveyAppUpdate =
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'messageSent', message: ChatMessage }
-  | { action: 'messageSent', message: ChatMessage }
   | { action: 'disconnect' }
   | { action: 'cleanMessage' }
   ;
@@ -159,8 +158,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       if (updatePlayer) {
         updatePlayer.chatMessage = update.message;
       }
-      // eslint-disable-next-line no-console
-      console.log(update.message);
       break;
 
     case 'cleanMessage':

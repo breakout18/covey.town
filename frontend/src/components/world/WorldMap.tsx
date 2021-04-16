@@ -545,20 +545,6 @@ export default function WorldMap(): JSX.Element {
     gameScene?.updatePlayersLocations(players);
   }, [players, deepPlayers, gameScene]);
 
-  // useEffect( () => {
-  //   function refreshMessage() {
-  //     const currentTime = Date.now();
-
-  //     players.forEach ((p: Player) => {
-  //       if ((p.chatMessage && currentTime - p.chatMessage.timestamp > 10000)) {
-  //         p.message?.setText('');
-  //       }
-  //     })
-  //     gameScene?.updatePlayersLocations(players);
-  //   }
-  //   const timer= setInterval(() => {refreshMessage()}, 2000);
-  //   return () => clearInterval(timer)
-  // });
 
   return <div id="map-container"/>;
 }
