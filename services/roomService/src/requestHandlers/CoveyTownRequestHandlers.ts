@@ -62,11 +62,6 @@ export interface TownListResponse {
   towns: CoveyTownList;
 }
 
-export interface TownChatHistoryResponse {
-  messages: ChatMessage[];
-  offset: string;
-}
-
 /**
  * Response from the server for a Town chat request. Message is the sanitized message. Warning will notify the client if anything in there message is changed. Offset is the id of the chat message.
  */
@@ -102,16 +97,6 @@ export interface TownChatSendRequest {
   coveyTownID: string;
   sessionToken: string;
   message: string;
-}
-
-/**
- * Payload sent by the client to send a quick chat message.
- * offset is the id of the chat message that the server will return limit messages prior.
- */
-export interface TownChatHistoryRequest {
-  coveyTownID: string;
-  offset: string;
-  limit: number;
 }
 
 /**
@@ -219,9 +204,10 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
   const cleanedMessage = clean(requestData.message);
   // Send message
   const town = townsStore.getControllerForTown(requestData.coveyTownID);
-  let success = town != null;
+  let success = false;
   const offset = nanoid();
   const curTime = Date.now();
+  let errMessage;
   if (town) {
     // Should tell town to send message, need to figure out how to get player
     const senderSession = town.getSessionByToken(requestData.sessionToken);
@@ -229,16 +215,13 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
       try {
         success = town.sendChat({ id: offset, sender: senderSession.player, message: cleanedMessage, timestamp: curTime});
       } catch (e) {
-        return {
-          isOK: false,
-          response: {
-            message: cleanedMessage,
-            offset,
-          },
-          message: e.message,
-        };
+        errMessage = e.message;
       }
+    } else {
+      errMessage = 'Session with sessionToken does not exist.';
     }
+  } else {
+    errMessage = 'Town with ID does not exist.';
   }
   return {
     isOK: success,
@@ -246,29 +229,7 @@ export async function townChatSendHandler(requestData: TownChatSendRequest): Pro
       message: cleanedMessage,
       offset,
     },
-    message: !success ? 'Message failed to send.' : undefined,
-  };
-}
-
-/**
- * Handler to process when a client requests the history of messages sent in the town.
- */
-export async function townChatHistoryHandler(requestData: TownChatHistoryRequest): Promise<ResponseEnvelope<TownChatHistoryResponse>> {
-  const townsStore = CoveyTownsStore.getInstance();
-  const town = townsStore.getControllerForTown(requestData.coveyTownID);
-  if (!town) {
-    return {
-      isOK: false,
-      message: 'Error: No such town',
-    };
-  }
-  const messages = town.chatHistoryTown(requestData.offset, requestData.limit);
-  return {
-    isOK: true,
-    response: {
-      messages,
-      offset: messages.length > 0 ? messages[-1].id : requestData.offset,
-    },
+    message: errMessage || undefined,
   };
 }
 

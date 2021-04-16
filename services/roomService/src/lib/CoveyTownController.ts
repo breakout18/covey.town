@@ -75,8 +75,6 @@ export default class CoveyTownController {
 
   private _chatRules: ChatRule[];
 
-  private _chatHistory: ChatMessage[];
-
   constructor(friendlyName: string, isPubliclyListed: boolean) {
     this._coveyTownID = (process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID());
     this._capacity = 50;
@@ -85,7 +83,6 @@ export default class CoveyTownController {
     this._friendlyName = friendlyName;
     // Default list of of chat rules
     this._chatRules = ChatMessageRules;
-    this._chatHistory = [];
   }
 
   /**
@@ -138,6 +135,13 @@ export default class CoveyTownController {
   }
 
   /**
+   * Returns the chat rules for this town.
+   */
+  set chatRules(chatRules: ChatRule[]) {
+    this._chatRules = chatRules;
+  }
+
+  /**
    * Recieves a chat message, checks it against rules, adds it to the chat history, and notifies all connected players.
    * @param listener 
    */
@@ -149,28 +153,12 @@ export default class CoveyTownController {
         throw new Error(rule.responseOnFail);
       }
     });
-    this._chatHistory.push(messageData);
     // Notify the other players
     this._listeners.forEach((listener) => listener.onMessageSent(messageData));
     return true;
     // }
   }
-
-  /**
-   * Fetch the specified number of messsages prior to the message with id offset.
-   * @param offset 
-   * @param limit 
-   * @returns 
-   */
-  chatHistoryTown(offset: string, limit: number): ChatMessage[] {
-    const orderedHistory = [...this._chatHistory].reverse();
-    const index = offset !== '' ? orderedHistory.findIndex(msg => msg.id === offset) + 1 : 0;
-    if (index !== -1) {
-      return orderedHistory.slice(index, index + limit);
-    }
-    return [];
-  }
-
+  
   /**
    * Subscribe to events from this town. Callers should make sure to
    * unsubscribe when they no longer want those events by calling removeTownListener

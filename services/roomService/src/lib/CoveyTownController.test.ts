@@ -10,7 +10,7 @@ import PlayerSession from '../types/PlayerSession';
 import {townSubscriptionHandler} from '../requestHandlers/CoveyTownRequestHandlers';
 import CoveyTownsStore from './CoveyTownsStore';
 import * as TestUtils from '../client/TestUtils';
-import { ChatMessage } from '../types/chatrules';
+import { ChatMessage, ChatMessageRules, ChatRule } from '../types/chatrules';
 
 jest.mock('./TwilioVideo');
 
@@ -48,6 +48,87 @@ describe('CoveyTownController', () => {
         const newPlayerSession = await townController.addPlayer(new Player(nanoid()));
         expect(mockGetTokenForTown).toBeCalledTimes(1);
         expect(mockGetTokenForTown).toBeCalledWith(townController.coveyTownID, newPlayerSession.player.id);
+      });
+  });
+  describe('sendMessage', () => {
+    let townController: CoveyTownController;
+    const mockChatRules = [mock<ChatRule>(), mock<ChatRule>(), mock<ChatRule>()];
+    let message: ChatMessage;
+    const mockChatRule = mock<ChatRule>({check: jest.fn(() => false), responseOnFail: 'I SHOULD NEVER FAIL!'});
+    const ruleToFail1 = mock<ChatRule>({check: jest.fn(() => true), responseOnFail: 'I FAILED!'});
+    const ruleToFail2 = mock<ChatRule>({check: jest.fn(() => true), responseOnFail: 'I ALSO FAILED!'});
+    const ruleToFail3 = mock<ChatRule>({check: jest.fn(() => true), responseOnFail: 'I FAILED AGAIN!'});
+    beforeEach(async () => {
+      mockChatRules.forEach(mockReset);
+      // mockChatRule.check.mockReset();
+      // ruleToFail1.check.mockReset();
+      // ruleToFail2.check.mockReset();
+      // ruleToFail3.check.mockReset();
+      const townName = `FriendlyNameTest-${nanoid()}`;
+      townController = new CoveyTownController(townName, false);
+      const newPlayerSession = await townController.addPlayer(new Player(nanoid()));
+      message = {
+        id: nanoid(),
+        sender: newPlayerSession.player,
+        message: 'hello town',
+        timestamp: Date.now(),
+      };
+      townController.chatRules = mockChatRules;
+    });
+    it('should check all of the rules once when validating a message',
+      async () => {
+        townController.sendChat(message);
+        townController.chatRules.forEach((rule) => {
+          expect(rule.check).toBeCalledTimes(1);
+          expect(rule.check).toBeCalledWith(message.message);
+        });
+      });
+      
+    it('should throw an error if the message fails a single rule',
+      async () => {
+        townController.chatRules = [mock<ChatRule>({check: () => true, responseOnFail: 'I FAILED!'})];
+        try {
+          townController.sendChat(message);
+          fail('Should have thrown an error.');
+        } catch (e) {
+          expect(e.message).toBe('I FAILED!');
+        }
+      });
+    it('should throw one error if the message fails multiple rules (the first rule to fail)',
+      async () => {
+        townController.chatRules = [ruleToFail1, ruleToFail2, ruleToFail3];
+        try {
+          townController.sendChat(message);
+          fail('Should have thrown an error.');
+        } catch (e) {
+          expect(e.message).toBe(ruleToFail1.responseOnFail);
+          expect(ruleToFail1.check).toBeCalledTimes(1);
+          expect(ruleToFail2.check).toBeCalledTimes(0);
+          expect(ruleToFail3.check).toBeCalledTimes(0);
+        }
+      });
+    it('should throw one error if the message fails multiple rules but passes others first',
+      async () => {
+        townController.chatRules = [mockChatRule, ruleToFail1, ruleToFail2];
+        try {
+          townController.sendChat(message);
+          fail('Should have thrown an error.');
+        } catch (e) {
+          expect(mockChatRule.check).toBeCalledTimes(1);
+          expect(e.message).toBe(ruleToFail1.responseOnFail);
+        }
+      });
+    it('should not alert the listeners if the message fails any rule',
+      async () => {
+        const mockListeners = [mock<CoveyTownListener>(), mock<CoveyTownListener>(), mock<CoveyTownListener>()];
+        townController.chatRules = [mockChatRule, ruleToFail1, ruleToFail2];
+        mockListeners.forEach(listener => townController.addTownListener(listener));
+        try {
+          townController.sendChat(message);
+          fail('Should have thrown an error.');
+        } catch (e) {
+          mockListeners.forEach(listener => expect(listener.onMessageSent).toBeCalledTimes(0));
+        }
       });
   });
   describe('town listeners and events', () => {

@@ -259,9 +259,20 @@ describe('TownsServiceAPIREST', () => {
         });
         fail('Expected an error to be thrown by sendChat but none thrown');
       } catch (err) {
-        // OK, expected an error
-        // TODO this should really check to make sure it's the *right* error, but we didn't specify
-        // the format of the exception :(
+        expect(err.message).toBe('Error processing request: Town with ID does not exist.');
+      }
+    });
+    
+    it('Throws an error if the session does not exist', async () => {
+      try {
+        await apiClient.sendChat({
+          coveyTownID: testingTown.coveyTownID,
+          sessionToken: nanoid(),
+          message: 'hello',
+        });
+        fail('Expected an error to be thrown by sendChat but none thrown');
+      } catch (err) {
+        expect(err.message).toBe('Error processing request: Session with sessionToken does not exist.');
       }
     });
     it('Accept a sent message to a public town', async () => {
@@ -286,6 +297,7 @@ describe('TownsServiceAPIREST', () => {
         message,
       });
       expect(res.message).toBeDefined();
+      expect(res.message === message);
       expect(res.offset).toBeDefined();
     });
     it('Throws an error if the message contains a bad string.', async () => {
@@ -298,6 +310,28 @@ describe('TownsServiceAPIREST', () => {
         fail('Expected an error to be thrown by sendChat but none thrown');
       } catch (err) {
         expect(err.message).toBe('Error processing request: Message contains bad words.');
+      }
+    });
+    it('Accept a sent message if it is exactly 140 characters.', async () => {
+      const res = await apiClient.sendChat({
+        sessionToken: joinRes.coveySessionToken,
+        coveyTownID: testingTown.coveyTownID,
+        message: '01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789',
+      });
+      expect(res.message).toBeDefined();
+      expect(res.message === message);
+      expect(res.offset).toBeDefined();
+    });
+    it('Accept a sent message if it is over 140 characters.', async () => {
+      try {
+        await apiClient.sendChat({
+          sessionToken: joinRes.coveySessionToken,
+          coveyTownID: testingTown.coveyTownID,
+          message: '012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890',
+        });
+        fail('Expected an error to be thrown by sendChat but none thrown');
+      } catch (err) {
+        expect(err.message).toBe('Error processing request: Message is over 140 characters.');
       }
     });
   });
