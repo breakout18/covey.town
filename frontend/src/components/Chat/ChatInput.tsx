@@ -66,6 +66,12 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
     }
   }
 
+  function getDate(timestamp: number) {
+    const d = new Date(timestamp);
+    return `${d.getMonth()+1   }-${  d.getDate()  }-${  d.getFullYear()  } ${ 
+    d.getHours()  }:${  d.getMinutes()}`;
+  }
+
   function DisplayHistory() {
     const { isOpen, open, close } = useDisclosure();
 
@@ -86,7 +92,7 @@ export default function ChatInput({ maxLength }: ChatInputProps): JSX.Element {
                   </Tr></Thead>
                   <Tbody>
                     {chatHistory.map((msg) => (
-                    <Tr key={msg.id}><Td role='cell'>{msg.timestamp}</Td><Td
+                    <Tr key={msg.id}><Td role='cell'>{getDate(msg.timestamp)}</Td><Td
                       role='cell'>{msg.message}</Td>
                       <Td role='cell'>{msg.sender._userName}</Td></Tr>))}
                 </Tbody>

@@ -35,6 +35,7 @@
     "normalize.css": "^8.0.1",
     "phaser": "^3.53.1",
     "react": "^17.0.1",
+    "react-chat-elements": "^10.14.0",
     "react-context-mutex": "^1.0.8",
     "react-dom": "^17.0.1",
     "react-hook-form": "^6.14.1",
