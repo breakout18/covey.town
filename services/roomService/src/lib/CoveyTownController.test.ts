@@ -10,7 +10,7 @@ import PlayerSession from '../types/PlayerSession';
 import {townSubscriptionHandler} from '../requestHandlers/CoveyTownRequestHandlers';
 import CoveyTownsStore from './CoveyTownsStore';
 import * as TestUtils from '../client/TestUtils';
-import { ChatMessage, ChatMessageRules, ChatRule } from '../types/chatrules';
+import { ChatMessage, ChatRule } from '../types/chatrules';
 
 jest.mock('./TwilioVideo');
 
