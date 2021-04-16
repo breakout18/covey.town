@@ -8,6 +8,7 @@ import {
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
+  townSubscriptionHandler,
   townUpdateHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
@@ -126,4 +127,8 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       });
     }
   });
+
+  const socketServer = new io.Server(http, { cors: { origin: '*' } });
+  socketServer.on('connection', townSubscriptionHandler);
+  return socketServer;
 }
