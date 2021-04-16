@@ -106,6 +106,8 @@ class CoveyGameScene extends Phaser.Scene {
           font: '18px monospace',
           color: '#000000',
           backgroundColor: '#ffffff',
+          align: 'center',
+          wordWrap: { width: 200},
         });
 
         let message: Phaser.GameObjects.Text;
@@ -113,13 +115,16 @@ class CoveyGameScene extends Phaser.Scene {
           message = this.add.text(0, 0, myPlayer.chatMessage.message, {
             font: '18px monospace',
             color: '#000000',
-            backgroundColor: '#fffffF',
+            backgroundColor: '#d1deff',
+            wordWrap: { width: 200},
           });
         } else {
           message = this.add.text(0, 0, '', {
             font: '18px monospace',
             color: '#000000',
-            backgroundColor: '#fffffF',
+            backgroundColor: '#d1deff',
+            align: 'center',
+            wordWrap: { width: 200},
           });
         }
         
@@ -239,7 +244,7 @@ class CoveyGameScene extends Phaser.Scene {
 
       const isMoving = primaryDirection !== undefined;
       this.player.label.setX(body.x);
-      this.player.label.setY(body.y + 50);
+      this.player.label.setY(body.y + 40);
       this.player.message.setX(body.x);
       this.player.message.setY(body.y - 30);
       if (!this.lastLocation
@@ -344,17 +349,21 @@ class CoveyGameScene extends Phaser.Scene {
       .sprite(spawnPoint.x, spawnPoint.y, 'atlas', 'misa-front')
       .setSize(30, 40)
       .setOffset(0, 24);
-    const label = this.add.text(spawnPoint.x, spawnPoint.y + 50, '(You)', {
+    const label = this.add.text(spawnPoint.x, spawnPoint.y + 40, '(You)', {
       font: '18px monospace',
       color: '#000000',
       // padding: {x: 20, y: 10},
       backgroundColor: '#ffffff',
+      align: 'center',
+      wordWrap: { width: 200},
     });
 
     const message = this.add.text (spawnPoint.x, spawnPoint.y - 30, '', {
       font: '18px monospace',
       color: '#000000',
-      backgroundColor: '#ffff0F', 
+      backgroundColor: '#ccfdda', 
+      align: 'center',
+      wordWrap: { width: 200},
       }); // no message initially
     message.visible = true;
 

@@ -10,6 +10,7 @@ import PlayerSession from '../types/PlayerSession';
 import {townSubscriptionHandler} from '../requestHandlers/CoveyTownRequestHandlers';
 import CoveyTownsStore from './CoveyTownsStore';
 import * as TestUtils from '../client/TestUtils';
+import { ChatMessage } from '../types/chatrules';
 
 jest.mock('./TwilioVideo');
 
@@ -67,6 +68,14 @@ describe('CoveyTownController', () => {
       testingTown.updatePlayerLocation(player, newLocation);
       mockListeners.forEach(listener => expect(listener.onPlayerMoved).toBeCalledWith(player));
     });
+    it('should notify added listeners of new messages when sendChat is called', async () => {
+      const player = new Player('test player');
+      await testingTown.addPlayer(player);
+      const newMessage: ChatMessage = {id: '12345', sender: player, message: 'New Message', timestamp: Date.now()};
+      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      testingTown.sendChat(newMessage);
+      mockListeners.forEach(listener => expect(listener.onMessageSent).toBeCalledWith(newMessage));
+    });
     it('should notify added listeners of player disconnections when destroySession is called', async () => {
       const player = new Player('test player');
       const session = await testingTown.addPlayer(player);
@@ -102,6 +111,17 @@ describe('CoveyTownController', () => {
       testingTown.removeTownListener(listenerRemoved);
       testingTown.updatePlayerLocation(player, newLocation);
       expect(listenerRemoved.onPlayerMoved).not.toBeCalled();
+    });
+    it('should not notify removed listeners of newMessages when sendChat is called', async () => {
+      const player = new Player('test player');
+      await testingTown.addPlayer(player);
+
+      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      const newMessage: ChatMessage = {id: '12345', sender: player, message: 'New Message', timestamp: Date.now()};
+      const listenerRemoved = mockListeners[1];
+      testingTown.removeTownListener(listenerRemoved);
+      testingTown.sendChat(newMessage);
+      expect(listenerRemoved.onMessageSent).not.toBeCalled();
     });
     it('should not notify removed listeners of player disconnections when destroySession is called', async () => {
       const player = new Player('test player');
@@ -171,7 +191,13 @@ describe('CoveyTownController', () => {
         townSubscriptionHandler(mockSocket);
         testingTown.updatePlayerLocation(player, generateTestLocation());
         expect(mockSocket.emit).toBeCalledWith('playerMoved', player);
-
+      });
+      it('should add a town listener, which should emit "messageSent" to the socket when a message is sent', async () => {
+        TestUtils.setSessionTokenAndTownID(testingTown.coveyTownID, session.sessionToken, mockSocket);
+        townSubscriptionHandler(mockSocket);
+        const newMessage: ChatMessage = {id: '12345', sender: player, message: 'New Message', timestamp: Date.now()};
+        testingTown.sendChat(newMessage);
+        expect(mockSocket.emit).toBeCalledWith('messageSent', newMessage);
       });
       it('should add a town listener, which should emit "playerDisconnect" to the socket when a player disconnects', async () => {
         TestUtils.setSessionTokenAndTownID(testingTown.coveyTownID, session.sessionToken, mockSocket);
