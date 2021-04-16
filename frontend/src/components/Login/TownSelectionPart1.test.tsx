@@ -90,6 +90,7 @@ function wrappedTownSelection() {
     sessionToken: '',
     userName: '',
     socket: null,
+    chatHistory: [],
     currentLocation: {
       x: 0,
       y: 0,
