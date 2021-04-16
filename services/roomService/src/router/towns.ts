@@ -4,12 +4,10 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
-  townChatHistoryHandler,
   townChatSendHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
-  townSubscriptionHandler,
   townUpdateHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';

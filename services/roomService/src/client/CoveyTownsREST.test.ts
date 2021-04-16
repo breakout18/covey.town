@@ -7,9 +7,6 @@ import { AddressInfo } from 'net';
 
 import TownsServiceClient, { TownJoinResponse, TownListResponse } from './TownsServiceClient';
 import addTownRoutes from '../router/towns';
-import CoveyTownController from '../lib/CoveyTownController';
-import Player from '../types/Player';
-import CoveyTownsStore from '../lib/CoveyTownsStore';
 
 type TestTownData = {
   friendlyName: string, coveyTownID: string,
